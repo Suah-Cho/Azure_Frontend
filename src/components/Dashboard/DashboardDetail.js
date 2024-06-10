@@ -8,7 +8,7 @@ function DashboardDetail() {
     const [gh_data, setGhData] = useState([]);
 
     useEffect(() => {
-        axios.get(`http://server:8000`)
+        axios.get(`http://40.82.144.200:8000`)
         .then(response => {
             console.log(response.data.data)
             setGhData(response.data.data)
