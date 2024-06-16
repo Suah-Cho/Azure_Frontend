@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Line } from 'react-chartjs-2';
+// import { Line } from 'react-chartjs-2';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import 'chart.js/auto';
 
@@ -11,66 +12,39 @@ function DashboardDetail() {
         axios.get(`http://40.82.144.200:8000`)
         .then(response => {
             console.log(response.data.data)
-            setGhData(response.data.data)
+            // setGhData(response.data.data)
+            const formattedData = response.data.data.map((item) => ({
+              event_time: new Date(item.event_time).toLocaleString(),
+              "UM-PYR20 함수율": item.value
+            }));
+            setGhData(formattedData);
         }).catch(error => {
             console.log(error)
         })
     }, [])
 
-    const precessData = gh_data => {
-        const devices = {};
-
-        gh_data.forEach(element => {
-            if (!devices[element.device_name]) {
-                devices[element.device_name] = {};
-            }
-            if (!devices[element.device_name][element.data_type_name]) {
-                devices[element.device_name][element.data_type_name] = {
-                    labels: [],
-                    values: []
-                };
-            }
-            devices[element.device_name][element.data_type_name].labels.push(element.event_time);
-            devices[element.device_name][element.data_type_name].values.push(element.data_value);
-        });
-
-        return devices;
-    }
-
-    const devicesData = precessData(gh_data);
+   
 
     return (
         <div>
           <h1>Device Data Charts</h1>
-          {Object.keys(devicesData).map((deviceName, idx) => (
-            <div key={idx}>
-              <h2>{deviceName}</h2>
-              <Line
-                data={{
-                  labels: devicesData[deviceName][Object.keys(devicesData[deviceName])[0]].labels,
-                  datasets: Object.keys(devicesData[deviceName]).map((dataType, index) => ({
-                    label: dataType,
-                    data: devicesData[deviceName][dataType].values,
-                    fill: false,
-                    borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`,
-                    tension: 0.1
-                  }))
-                }}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                    },
-                    title: {
-                      display: true,
-                      text: `Device: ${deviceName}`
-                    }
-                  }
-                }}
-              />
-            </div>
-          ))}
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart
+              width={500}
+              height={300}
+              data={gh_data}
+              margin={{
+                top: 5, right: 30, left: 20, bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="event_time" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="UM-PYR20 함수율" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       );
 }
